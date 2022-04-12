@@ -30,7 +30,7 @@ mt19937 gen(0);
 
 ll random(ll x) {
 	if(x < 1) return 0;
-	return uniform_int_distribution<ll>(1, x)(gen); 
+	return uniform_int_distribution<ll>(0, x)(gen); 
 }
 
 
