@@ -18,23 +18,117 @@ typedef vector <ii> vii;
 typedef vector <vii> vvii;
 typedef vector <vvii> vvvii;
 
+void Floyd_Warshall(int n, vvi& dist){
+    for (int k = 0; k < n; ++k){
+        for (int i = 0; i < n; ++i){
+            for (int j = 0; j < n; ++j){
+                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+            }
+        }
+    }
+}
+
+bool correct(int pos, vvi& dist, vi& V){
+	int n = dist.size();
+	vi col(n, 0);
+
+	col[pos] = 1;
+
+	for (int x: V){
+		vi nextcol = col;
+
+		for (int i = 0; i < n; ++i){
+			if (not col[i]) continue;
+
+			for (int j = 0; j < n; ++j){
+				if (dist[i][j] == x){
+					nextcol[j] = 1;
+				}
+			}
+		}
+
+		col = nextcol;
+	}	
+
+	for (int x: col) {
+		if (not x) return false;
+	}
+
+	return true;
+}
+
+
+bool valid(int n, vvi& G, vi& V){
+	if (n != G.size()) return false;
+
+	vvi dist(n, vi(n, 1e9));
+
+	for (int i = 0; i < n; ++i){
+		dist[i][i] = 0;
+
+		for (int j : G[i]){
+			dist[i][j] = dist[j][i] = 1;
+		}
+	}
+
+	Floyd_Warshall(n, dist);
+
+	for (int i = 0; i < n; ++i){
+		for (int j = 0; j < n; ++j){
+			if (dist[i][j] == 1e9) return false;
+		}
+	}	
+
+	for (int i = 0; i < n; ++i){
+		if (correct(i, dist, V)) return false;
+	}
+
+	return true;
+
+}
+
 void build_cycle(int n, int m){
 	vvi edges;
-
-	for (int i = 0; i < m; ++i){
-		edges.push_back({i, (i + 1) % m});
+	if(m == 1) {
+		for(int i=0; i < n; ++i) {
+			for(int j=i+1; j < n; ++j) {
+				edges.push_back({i, j});
+			}
+		}
 	}
+	else {
+		for (int i = 0; i < m; ++i){
+			edges.push_back({i, (i + 1) % m});
+		}
 
-	for (int i = m; i < n; ++i){
-		edges.push_back({i, (i + 1) % m});
-		edges.push_back({i, (m + i - 1) % m});
+		for (int i = m; i < n; ++i){
+			edges.push_back({i, (i + 1) % m});
+			edges.push_back({i, (m + i - 1) % m});
+		}
 	}
-
 	cout << edges.size() << '\n';
 	for (vi& edge: edges) cout << edge[0] << ' ' << edge[1] << '\n';
 }
 
+void try_path(int n, vi& V){
+	vvi G(n);
 
+	for (int i = 0; i < n - 1; ++i) {
+		G[i].push_back(i+1);
+	}	
+
+	if (not valid(n, G, V)){
+		cout << "SI" << '\n';
+		return;
+	}
+
+	cout << "NO" << '\n';
+	cout << n - 1 << '\n';
+
+	for (int i = 0; i < n - 1; ++i){
+		cout << i << ' ' << i + 1 << '\n';
+	}
+}
 
 void solve(){
 	int n, m;
